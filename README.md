@@ -6,7 +6,7 @@ Herramienta de línea de comandos para optimizar imágenes para web, convirtién
 
 - ✔ Recorre directorios recursivamente
 - ✔ Detecta `.HEIC`, `.jpg`, `.jpeg`, `.png`
-- ✔ Redimensiona automáticamente a tamaño web (máx. 1200px de ancho)
+- ✔ Redimensiona a dimensiones personalizables (ancho y alto)
 - ✔ Convierte todo a formato WebP
 - ✔ Nivel de compresión configurable (0-100)
 - ✔ Mantiene la estructura de carpetas original
@@ -56,10 +56,20 @@ python convert-images.py
    [Por defecto: 80 - Recomendado para web]
    > 85
 
+📐 Ancho de las imágenes (en píxeles):
+   [Por defecto: 1200 - Usar 0 para mantener original]
+   > 1920
+
+📏 Alto de las imágenes (en píxeles):
+   [Por defecto: 0 - Mantener proporción según ancho]
+   > 1080
+
 ------------------------------------------------------------
    Origen:  mis-fotos
    Salida:  output
    Calidad: 85
+   Ancho:   1920
+   Alto:    1080
 ------------------------------------------------------------
 ```
 
@@ -70,6 +80,17 @@ python convert-images.py
 | Carpeta origen | `images`          | Directorio con las imágenes originales                  |
 | Carpeta salida | `images-webp`     | Directorio donde se guardan los WebP                    |
 | Calidad        | `80`              | Nivel de compresión WebP (0-100, mayor = mejor calidad) |
+| Ancho          | `1200`            | Ancho en píxeles (0 = mantener original)                |
+| Alto           | `0`               | Alto en píxeles (0 = proporcional al ancho)             |
+
+### Comportamiento del redimensionado
+
+| Ancho | Alto | Resultado                                    |
+| ----- | ---- | -------------------------------------------- |
+| 1200  | 0    | Ancho 1200px, alto proporcional              |
+| 0     | 800  | Alto 800px, ancho proporcional               |
+| 1920  | 1080 | Dimensiones exactas 1920x1080 (puede estirar)|
+| 0     | 0    | Mantiene dimensiones originales              |
 
 ### Guía de calidad
 

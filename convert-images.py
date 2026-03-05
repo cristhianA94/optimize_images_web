@@ -3,7 +3,8 @@ from PIL import Image
 import pillow_heif
 
 # CONFIGURACIÓN
-MAX_WIDTH = 1200          # ancho máximo para web
+DEFAULT_MAX_WIDTH = 1200   # ancho máximo por defecto
+DEFAULT_MAX_HEIGHT = 0     # alto máximo por defecto (0 = sin límite)
 SUPPORTED_EXTENSIONS = (".heic", ".jpg", ".jpeg", ".png")
 
 pillow_heif.register_heif_opener()
@@ -45,21 +46,80 @@ def get_user_input():
             print("   ⚠️ Valor inválido. Usando 80.")
             quality = 80
     
+    # Ancho
+    print(f"\n📐 Ancho de las imágenes (en píxeles):")
+    print(f"   [Por defecto: {DEFAULT_MAX_WIDTH} - Usar 0 para mantener original]")
+    width_input = input("   > ").strip()
+    if not width_input:
+        max_width = DEFAULT_MAX_WIDTH
+    else:
+        try:
+            max_width = int(width_input)
+            if max_width < 0:
+                print(f"   ⚠️ Valor inválido. Usando {DEFAULT_MAX_WIDTH}.")
+                max_width = DEFAULT_MAX_WIDTH
+        except ValueError:
+            print(f"   ⚠️ Valor inválido. Usando {DEFAULT_MAX_WIDTH}.")
+            max_width = DEFAULT_MAX_WIDTH
+    
+    # Alto
+    print(f"\n📏 Alto de las imágenes (en píxeles):")
+    print(f"   [Por defecto: 0 - Mantener proporción según ancho]")
+    height_input = input("   > ").strip()
+    if not height_input:
+        max_height = DEFAULT_MAX_HEIGHT
+    else:
+        try:
+            max_height = int(height_input)
+            if max_height < 0:
+                print("   ⚠️ Valor inválido. Usando 0 (sin límite).")
+                max_height = 0
+        except ValueError:
+            print("   ⚠️ Valor inválido. Usando 0 (sin límite).")
+            max_height = 0
+    
     print("\n" + "-" * 60)
     print(f"   Origen:  {input_dir}")
     print(f"   Salida:  {output_dir}")
     print(f"   Calidad: {quality}")
+    print(f"   Ancho: {max_width if max_width > 0 else 'Original'}")
+    print(f"   Alto:  {max_height if max_height > 0 else 'Proporcional'}")
     print("-" * 60)
     
-    return input_dir, output_dir, quality
+    return input_dir, output_dir, quality, max_width, max_height
 
 
-def resize_image(img, max_width):
+def resize_image(img, target_width, target_height):
+    """Redimensiona la imagen a las dimensiones especificadas.
+    
+    - Si ambas dimensiones están definidas (>0): fuerza esas dimensiones exactas
+    - Si solo ancho está definido: calcula alto proporcionalmente
+    - Si solo alto está definido: calcula ancho proporcionalmente
+    - Si ninguna está definida (ambas 0): devuelve imagen original
+    """
     width, height = img.size
-    if width > max_width:
-        ratio = max_width / width
+    
+    if target_width > 0 and target_height > 0:
+        # Ambas definidas: forzar dimensiones exactas
+        new_width, new_height = target_width, target_height
+    elif target_width > 0:
+        # Solo ancho: calcular alto proporcional
+        ratio = target_width / width
+        new_width = target_width
         new_height = int(height * ratio)
-        return img.resize((max_width, new_height), Image.LANCZOS)
+    elif target_height > 0:
+        # Solo alto: calcular ancho proporcional
+        ratio = target_height / height
+        new_width = int(width * ratio)
+        new_height = target_height
+    else:
+        # Sin límites: mantener original
+        return img
+    
+    # Solo redimensionar si es diferente
+    if new_width != width or new_height != height:
+        return img.resize((new_width, new_height), Image.LANCZOS)
+    
     return img
 
 
@@ -108,7 +168,7 @@ def scan_images(input_dir):
     return images_found
 
 
-def convert_images(images, input_dir, output_dir, quality):
+def convert_images(images, input_dir, output_dir, quality, max_width, max_height):
     print("\n" + "=" * 60)
     print("🔄 CONVIRTIENDO A WEBP...")
     print("=" * 60)
@@ -134,7 +194,7 @@ def convert_images(images, input_dir, output_dir, quality):
             with Image.open(input_path) as img:
                 img = img.convert("RGB")
                 original_dims = img.size
-                img = resize_image(img, MAX_WIDTH)
+                img = resize_image(img, max_width, max_height)
                 new_dims = img.size
                 
                 img.save(
@@ -181,7 +241,7 @@ def convert_images(images, input_dir, output_dir, quality):
 
 if __name__ == "__main__":
     # Obtener configuración del usuario
-    input_dir, output_dir, quality = get_user_input()
+    input_dir, output_dir, quality, max_width, max_height = get_user_input()
     
     if not os.path.exists(input_dir):
         print(f"\n❌ El directorio '{input_dir}' no existe.")
@@ -197,6 +257,6 @@ if __name__ == "__main__":
     response = input().strip().lower()
     
     if response in ("s", "si", "sí", "y", "yes"):
-        convert_images(images, input_dir, output_dir, quality)
+        convert_images(images, input_dir, output_dir, quality, max_width, max_height)
     else:
         print("\n❌ Conversión cancelada.")
