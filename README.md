@@ -1,13 +1,13 @@
 # 🖼️ Optimize Images Web
 
-Herramienta de línea de comandos para optimizar imágenes para web, convirtiéndolas a formato WebP con redimensionado automático.
+Herramienta de línea de comandos para optimizar imágenes para web, convirtiéndolas a formato WebP o JPG con redimensionado automático.
 
 ## ✨ Características
 
 - ✔ Recorre directorios recursivamente
 - ✔ Detecta `.HEIC`, `.jpg`, `.jpeg`, `.png`
 - ✔ Redimensiona a dimensiones personalizables (ancho y alto)
-- ✔ Convierte todo a formato WebP
+- ✔ Convierte al formato de salida elegido: **WebP** o **JPG**
 - ✔ Nivel de compresión configurable (0-100)
 - ✔ Mantiene la estructura de carpetas original
 - ✔ Muestra estadísticas de reducción de tamaño
@@ -64,12 +64,17 @@ python convert-images.py
    [Por defecto: 0 - Mantener proporción según ancho]
    > 1080
 
+🗂️  Formato de salida (webp / jpg):
+   [Por defecto: webp]
+   > jpg
+
 ------------------------------------------------------------
    Origen:  mis-fotos
    Salida:  output
    Calidad: 85
    Ancho:   1920
    Alto:    1080
+   Formato: JPG
 ------------------------------------------------------------
 ```
 
@@ -82,15 +87,16 @@ python convert-images.py
 | Calidad        | `80`              | Nivel de compresión WebP (0-100, mayor = mejor calidad) |
 | Ancho          | `1200`            | Ancho en píxeles (0 = mantener original)                |
 | Alto           | `0`               | Alto en píxeles (0 = proporcional al ancho)             |
+| Formato        | `webp`            | Formato de salida: `webp` o `jpg`                       |
 
 ### Comportamiento del redimensionado
 
-| Ancho | Alto | Resultado                                    |
-| ----- | ---- | -------------------------------------------- |
-| 1200  | 0    | Ancho 1200px, alto proporcional              |
-| 0     | 800  | Alto 800px, ancho proporcional               |
-| 1920  | 1080 | Dimensiones exactas 1920x1080 (puede estirar)|
-| 0     | 0    | Mantiene dimensiones originales              |
+| Ancho | Alto | Resultado                                     |
+| ----- | ---- | --------------------------------------------- |
+| 1200  | 0    | Ancho 1200px, alto proporcional               |
+| 0     | 800  | Alto 800px, ancho proporcional                |
+| 1920  | 1080 | Dimensiones exactas 1920x1080 (puede estirar) |
+| 0     | 0    | Mantiene dimensiones originales               |
 
 ### Guía de calidad
 

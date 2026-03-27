@@ -78,15 +78,25 @@ def get_user_input():
             print("   ⚠️ Valor inválido. Usando 0 (sin límite).")
             max_height = 0
     
+    # Formato de salida
+    print("\n🗂️  Formato de salida (webp / jpg):")
+    print("   [Por defecto: webp]")
+    format_input = input("   > ").strip().lower()
+    if format_input in ("jpg", "jpeg"):
+        output_format = "jpg"
+    else:
+        output_format = "webp"
+
     print("\n" + "-" * 60)
     print(f"   Origen:  {input_dir}")
     print(f"   Salida:  {output_dir}")
     print(f"   Calidad: {quality}")
     print(f"   Ancho: {max_width if max_width > 0 else 'Original'}")
     print(f"   Alto:  {max_height if max_height > 0 else 'Proporcional'}")
+    print(f"   Formato: {output_format.upper()}")
     print("-" * 60)
     
-    return input_dir, output_dir, quality, max_width, max_height
+    return input_dir, output_dir, quality, max_width, max_height, output_format
 
 
 def resize_image(img, target_width, target_height):
@@ -168,7 +178,7 @@ def scan_images(input_dir):
     return images_found
 
 
-def convert_images(images, input_dir, output_dir, quality, max_width, max_height):
+def convert_images(images, input_dir, output_dir, quality, max_width, max_height, output_format="webp"):
     print("\n" + "=" * 60)
     print("🔄 CONVIRTIENDO A WEBP...")
     print("=" * 60)
@@ -187,7 +197,7 @@ def convert_images(images, input_dir, output_dir, quality, max_width, max_height
         output_subdir = os.path.join(output_dir, relative_path)
         os.makedirs(output_subdir, exist_ok=True)
         
-        output_name = os.path.splitext(img_info["name"])[0] + ".webp"
+        output_name = os.path.splitext(img_info["name"])[0] + "." + output_format
         output_path = os.path.join(output_subdir, output_name)
         
         try:
@@ -197,12 +207,11 @@ def convert_images(images, input_dir, output_dir, quality, max_width, max_height
                 img = resize_image(img, max_width, max_height)
                 new_dims = img.size
                 
-                img.save(
-                    output_path,
-                    "WEBP",
-                    quality=quality,
-                    method=6
-                )
+                pil_format = "WEBP" if output_format == "webp" else "JPEG"
+                save_kwargs = {"quality": quality}
+                if pil_format == "WEBP":
+                    save_kwargs["method"] = 6
+                img.save(output_path, pil_format, **save_kwargs)
             
             original_size = os.path.getsize(input_path) / 1024
             new_size = os.path.getsize(output_path) / 1024
@@ -241,7 +250,7 @@ def convert_images(images, input_dir, output_dir, quality, max_width, max_height
 
 if __name__ == "__main__":
     # Obtener configuración del usuario
-    input_dir, output_dir, quality, max_width, max_height = get_user_input()
+    input_dir, output_dir, quality, max_width, max_height, output_format = get_user_input()
     
     if not os.path.exists(input_dir):
         print(f"\n❌ El directorio '{input_dir}' no existe.")
@@ -257,6 +266,6 @@ if __name__ == "__main__":
     response = input().strip().lower()
     
     if response in ("s", "si", "sí", "y", "yes"):
-        convert_images(images, input_dir, output_dir, quality, max_width, max_height)
+        convert_images(images, input_dir, output_dir, quality, max_width, max_height, output_format)
     else:
         print("\n❌ Conversión cancelada.")
